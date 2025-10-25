@@ -1,128 +1,110 @@
 
 
-# Assignment 3 — City Transportation Network Optimization (MST)
+# **Analytical Report — Assignment 3: Optimization of a City Transportation Network (MST)**
 
-## Overview
+## **1. Overview**
 
-This project implements and benchmarks two classic graph algorithms — **Prim’s** and **Kruskal’s** — to find the **Minimum Spanning Tree (MST)** of a weighted undirected graph.
-The scenario models a **city road network**, where each district is a vertex and each possible road is an edge with a construction cost (weight).
+The purpose of this work was to apply **Prim’s** and **Kruskal’s** algorithms to find the **Minimum Spanning Tree (MST)** of a weighted undirected graph that models a city’s transportation network.
+The main goal: connect all districts with the **minimum total construction cost**.
 
-The goal:
-
-> Connect all districts with the minimum total cost while keeping the network connected.
-
----
-
-## Algorithms
-
-### Prim’s Algorithm
-
-* Builds the MST starting from an arbitrary vertex.
-* Repeatedly adds the smallest edge that connects a visited vertex to an unvisited one.
-* Implemented using a **priority queue** (min-heap) for efficiency.
-* Best suited for **dense graphs**.
-
-### Kruskal’s Algorithm
-
-* Sorts all edges by weight.
-* Adds each edge if it doesn’t form a cycle (using **Disjoint Set Union**, union–find).
-* Efficient for **sparse graphs**.
-
-Both algorithms measure:
-
-* Total MST cost
-* Number of vertices and edges
-* Number of key operations (comparisons, unions, etc.)
-* Execution time (ms)
+Both algorithms were implemented in Java.
+Input data were read from a JSON file (`ass_3_input.json`), and results were written to `ass_3_output_generated.json` and `ass_3_report.md`.
 
 ---
 
-## Architecture
+## **2. Experimental Results**
 
-| Package              | Description                                                                  |
-| -------------------- | ---------------------------------------------------------------------------- |
-| `edu.mst.mst.algo`   | Core algorithm implementations: `Prim`, `Kruskal`, `DSU`.                    |
-| `edu.mst.mst.model`  | Data structures for graph storage (`Edge`, `GraphCase`, `GraphInput`, etc.). |
-| `edu.mst.mst.io`     | Handles JSON parsing and report generation (`ReportWriter`).                 |
-| `src/main/resources` | Contains the input JSON file (`ass_3_input.json`).                           |
-| `Main.java`          | Entry point that runs both algorithms and compares results.                  |
+### **2.1 Input Graph**
 
----
+* **Number of vertices (districts):** 5
+* **Number of edges (potential roads):** 7
+* Edge weights represent road construction costs.
 
-## Input Format (`ass_3_input.json`)
+Example edges:
 
-```json
-{
-  "graphs": [
-    {
-      "id": 1,
-      "nodes": ["A", "B", "C", "D", "E"],
-      "edges": [
-        {"from": "A", "to": "B", "weight": 3},
-        {"from": "A", "to": "C", "weight": 4},
-        {"from": "B", "to": "C", "weight": 2},
-        {"from": "B", "to": "D", "weight": 6},
-        {"from": "C", "to": "D", "weight": 5},
-        {"from": "C", "to": "E", "weight": 7},
-        {"from": "D", "to": "E", "weight": 1}
-      ]
-    }
-  ]
-}
+```
+A–B (3), A–C (4), B–C (2), B–D (6), C–D (5), C–E (7), D–E (1)
 ```
 
 ---
 
-## Output
+### **2.2 Results Summary**
 
-After execution, two files are generated:
+| Algorithm   | Total Cost | Operations | Execution Time (ms) | Notes                      |
+| ----------- | ---------- | ---------- | ------------------- | -------------------------- |
+| **Prim**    | 11.000     | 29         | 0.027               | Uses heap + adjacency list |
+| **Kruskal** | 11.000     | 27         | 0.020               | Uses sorting + DSU         |
 
-```
-ass_3_output_generated.json  # Detailed MST results for each graph
-ass_3_report.md              # Summary + comparison of Prim vs Kruskal
-```
-
-Example console output:
-
-```
-Graph 1 (|V|=5, |E|=7)
-Graph 1: Prim=11.000 (ops=29, 0.027ms), Kruskal=11.000 (ops=27, 0.020ms), match=true
-```
-
- Both algorithms produce identical MST costs (as expected).
+ Both algorithms produced **identical MST total cost**, confirming correctness.
 
 ---
 
-## Performance Snapshot
+### **2.3 MST Example (Prim’s output)**
 
-| Algorithm | Total Cost | Operations | Time (ms) | Notes                               |
-| --------- | ---------- | ---------- | --------- | ----------------------------------- |
-| Prim      | 11.000     | 29         | 0.027     | Better for dense graphs             |
-| Kruskal   | 11.000     | 27         | 0.020     | Simpler and faster on sparse graphs |
+| From | To | Weight |
+| ---- | -- | ------ |
+| D    | E  | 1      |
+| B    | C  | 2      |
+| A    | B  | 3      |
+| C    | D  | 5      |
 
----
-
-## Discussion
-
-* Both implementations return the same MST total cost → correctness verified.
-* **Prim** is more efficient for dense graphs due to heap-based vertex exploration.
-* **Kruskal** is more efficient for sparse graphs because it avoids heap operations and only sorts edges once.
-* For small input sizes, differences are negligible, but Kruskal tends to run slightly faster.
+**Total Cost:** 11.0
 
 ---
 
-## How to Run
+## **3. Interpretation of Results**
 
-1. Open the project in **IntelliJ IDEA** (Maven enabled).
-2. Make sure the file `ass_3_input.json` is inside `src/main/resources/`.
-3. Run `Main.java`.
+* Both algorithms constructed valid MSTs with the same total weight (11), which confirms the theoretical property that MST is **unique in terms of total cost**, even if its structure differs slightly.
+* The **number of operations** was close: Prim (29) vs Kruskal (27).
+  The small difference comes from Prim’s repeated heap updates vs Kruskal’s union–find operations.
+* **Execution time** also correlates with theoretical complexity:
 
-    
+  * Prim’s: `O(E log V)` due to heap operations.
+  * Kruskal’s: `O(E log E)` from sorting edges.
+* On this small dataset, Kruskal appeared slightly faster because the overhead of heap management in Prim dominates when the graph is small.
+
+---
+
+## **4. Comparative Analysis**
+
+| Aspect                      | **Prim’s Algorithm**                              | **Kruskal’s Algorithm**                     |
+| --------------------------- | ------------------------------------------------- | ------------------------------------------- |
+| **Approach**                | Grows tree from one vertex using a priority queue | Sorts edges and builds MST using union–find |
+| **Data Structure**          | Min-heap + adjacency list                         | Disjoint Set Union (DSU)                    |
+| **Complexity**              | `O(E log V)`                                      | `O(E log E)`                                |
+| **Best For**                | Dense graphs                                      | Sparse graphs                               |
+| **Implementation**          | More code logic (heap + visited)                  | Simpler to implement                        |
+| **Edge Representation**     | Works best with adjacency list                    | Works best with edge list                   |
+| **Performance (this case)** | 29 ops, 0.027 ms                                  | 27 ops, 0.020 ms                            |
+
+**Observation:**
+Kruskal slightly outperformed Prim in operation count and runtime due to the small and moderately sparse graph, aligning with theoretical expectations.
+
+---
+
+## **5. Conclusions**
+
+* Both algorithms successfully identified the same MST with a total cost of **11.0**.
+* The **efficiency difference** is minimal on small inputs, but:
+
+  * **Prim’s** scales better on **dense** graphs (many edges).
+  * **Kruskal’s** scales better on **sparse** graphs (fewer edges).
+* The measured performance confirms textbook time complexities:
+
+  * `Prim → O(E log V)`
+  * `Kruskal → O(E log E)`
+* In real-world city planning, **Prim’s algorithm** would be preferable when each district connects to many others (dense infrastructure), while **Kruskal’s algorithm** suits networks where only a few possible roads exist between areas.
+
+---
 
 
-## Author
+
 
 **Zumrad Sherbadalova**
-*Design and Analysis of Algorithms — Assignment 3*
+Course: *Design and Analysis of Algorithms*
+
+
+---
+
 
 
